@@ -1,0 +1,21 @@
+[skill]
+name = "desktop-cleanup"
+description = "Automated workspace cleanup and organization: reviews disk health, previews unorganized files, and cleans temporary clutter"
+version = "0.1.0"
+author = "openjarvis"
+
+[[skill.steps]]
+tool_name = "desktop_automation"
+arguments_template = '{"action": "system_vitals"}'
+output_key = "system_status"
+
+[[skill.steps]]
+tool_name = "file_organizer"
+arguments_template = '{"action": "clean_temp", "dry_run": true}'
+output_key = "temp_preview"
+
+[[skill.steps]]
+tool_name = "think"
+arguments_template = '{"thought": "Review system disk usage and proposed cleanup items, summarizing potential space savings and recommended actions: {system_status} | {temp_preview}"}'
+output_key = "cleanup_plan"
+

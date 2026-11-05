@@ -1,0 +1,26 @@
+[skill]
+name = "work-assistant"
+description = "Automated work briefing and task assistant: generates daily briefing, checks system readiness, and prepares a standup summary"
+version = "0.1.0"
+author = "openjarvis"
+
+[[skill.steps]]
+tool_name = "work_briefing"
+arguments_template = '{"action": "daily_briefing"}'
+output_key = "briefing"
+
+[[skill.steps]]
+tool_name = "desktop_automation"
+arguments_template = '{"action": "system_vitals"}'
+output_key = "vitals"
+
+[[skill.steps]]
+tool_name = "task_manage"
+arguments_template = '{"action": "summary"}'
+output_key = "tasks"
+
+[[skill.steps]]
+tool_name = "think"
+arguments_template = '{"thought": "Synthesize the briefing, system readiness, and pending task summary into an actionable, empowering daily game plan: {briefing} | {vitals} | {tasks}"}'
+output_key = "daily_plan"
+
