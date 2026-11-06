@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
@@ -12,6 +13,11 @@ import { VitePWA } from 'vite-plugin-pwa';
 const apiTarget = process.env.OPENJARVIS_VITE_PROXY_TARGET
   || process.env.VITE_API_URL
   || 'http://localhost:8000';
+
+const isVercel = Boolean(process.env.VERCEL || process.env.NOW_BUILDER);
+const outDir = isVercel
+  ? path.resolve(import.meta.dirname, 'dist')
+  : path.resolve(import.meta.dirname, '../src/openjarvis/server/static');
 
 export default defineConfig({
   resolve: {
@@ -41,9 +47,27 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/v1\//, /^\/health/, /^\/dashboard/, /^\/api\//],
       },
     }),
+    {
+      name: 'sync-dist-and-static',
+      closeBundle() {
+        const staticDir = path.resolve(import.meta.dirname, '../src/openjarvis/server/static');
+        const distDir = path.resolve(import.meta.dirname, 'dist');
+        const targetDir = isVercel ? distDir : staticDir;
+        const mirrorDir = isVercel ? staticDir : distDir;
+
+        try {
+          if (fs.existsSync(targetDir)) {
+            fs.mkdirSync(mirrorDir, { recursive: true });
+            fs.cpSync(targetDir, mirrorDir, { recursive: true });
+          }
+        } catch {
+          // Non-fatal if target parent is not accessible in sandboxed CI
+        }
+      },
+    },
   ],
   build: {
-    outDir: '../src/openjarvis/server/static',
+    outDir,
     emptyOutDir: true,
     // Preserve the Vite 6 browser baseline for existing desktop webviews.
     target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
