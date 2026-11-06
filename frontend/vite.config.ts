@@ -14,10 +14,7 @@ const apiTarget = process.env.OPENJARVIS_VITE_PROXY_TARGET
   || process.env.VITE_API_URL
   || 'http://localhost:8000';
 
-const isVercel = Boolean(process.env.VERCEL || process.env.NOW_BUILDER);
-const outDir = isVercel
-  ? path.resolve(import.meta.dirname, 'dist')
-  : path.resolve(import.meta.dirname, '../src/openjarvis/server/static');
+const outDir = path.resolve(import.meta.dirname, 'dist');
 
 export default defineConfig({
   resolve: {
@@ -52,13 +49,11 @@ export default defineConfig({
       closeBundle() {
         const staticDir = path.resolve(import.meta.dirname, '../src/openjarvis/server/static');
         const distDir = path.resolve(import.meta.dirname, 'dist');
-        const targetDir = isVercel ? distDir : staticDir;
-        const mirrorDir = isVercel ? staticDir : distDir;
 
         try {
-          if (fs.existsSync(targetDir)) {
-            fs.mkdirSync(mirrorDir, { recursive: true });
-            fs.cpSync(targetDir, mirrorDir, { recursive: true });
+          if (fs.existsSync(distDir)) {
+            fs.mkdirSync(staticDir, { recursive: true });
+            fs.cpSync(distDir, staticDir, { recursive: true });
           }
         } catch {
           // Non-fatal if target parent is not accessible in sandboxed CI
