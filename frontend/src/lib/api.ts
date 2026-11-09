@@ -216,7 +216,16 @@ export async function pullModel(modelName: string): Promise<void> {
     body: JSON.stringify({ model: modelName }),
   });
   if (!res.ok) {
-    const detail = await res.text().catch(() => res.statusText);
+    let detail = await res.text().catch(() => res.statusText);
+    try {
+      const parsed = JSON.parse(detail);
+      if (parsed.detail) detail = parsed.detail;
+    } catch {}
+    if (!detail || detail.trim() === '') {
+      detail = res.status === 502
+        ? 'Ollama or backend server is not running. Local model downloads require Ollama (https://ollama.com) on port 11434 and the OpenJarvis backend.'
+        : `Server returned HTTP ${res.status}`;
+    }
     throw new Error(`Failed to pull model: ${detail}`);
   }
 }
